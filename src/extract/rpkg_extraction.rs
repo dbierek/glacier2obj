@@ -20,6 +20,10 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+use glacier_commons::hash_list::HashList;
+use glacier_commons::metadata::ExtendedResourceMetadata;
+use glacier_formats::material::MaterialInstance;
+use rpkg_rs::WoaVersion;
 
 pub struct RpkgExtraction;
 
@@ -96,10 +100,6 @@ impl RpkgExtraction {
                     ).unwrap();
                     log_callback(msg.as_ptr());
                     for hash in chunk {
-                        let msg = std::ffi::CString::new(format!(
-                            "Thread {}: Extracting hash {}.",
-                            chunk_i, hash)
-                        ).unwrap();
                         log_callback(msg.as_ptr());
                         let runtime_folder_path = PathBuf::from(runtime_folder_ref);
 
@@ -136,15 +136,14 @@ impl RpkgExtraction {
                         if aloc_or_prim_file_path.exists() {
                             let aloc_or_prim_file_path_metadata = aloc_or_prim_file_path.metadata();
                             if aloc_or_prim_file_path_metadata.unwrap().modified().unwrap() >= package_path.metadata().unwrap().modified().unwrap() {
-                                // let msg = std::ffi::CString::new(format!(
-                                //     "Thread {}: Skipping hash {} since the file is newer than the rpkg.",
-                                //     chunk_i, hash)
-                                // ).unwrap();
-                                // log_callback(msg.as_ptr());
                                 skipped += 1;
                                 continue
                             }
                         }
+                        let msg = std::ffi::CString::new(format!(
+                            "Thread {}: Extracting hash {}.",
+                            chunk_i, hash)
+                        ).unwrap();
                         let rpkg = match resource_packages.entry(last_partition.clone()) {
                             std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
                             std::collections::hash_map::Entry::Vacant(entry) => {
@@ -310,9 +309,13 @@ impl RpkgExtraction {
 
         for entity in &scene_nav_json.meshes {
             if aloc_or_prim_type == "ALOC" {
-                aloc_or_prim_hashes.insert(entity.aloc_hash.clone());
+                if !entity.aloc_hash.is_empty() {
+                    aloc_or_prim_hashes.insert(entity.aloc_hash.clone());
+                }
             } else {
-                aloc_or_prim_hashes.insert(entity.prim_hash.clone());
+                if !entity.prim_hash.is_empty() {
+                    aloc_or_prim_hashes.insert(entity.prim_hash.clone());
+                }
             }
         }
         for hash in aloc_or_prim_hashes {
@@ -485,16 +488,6 @@ impl RpkgExtraction {
                 // log_callback(msg.as_ptr());
 
                 return Ok(result);
-            } else {
-                let msg = std::ffi::CString::new(
-                    format!(
-                        "Didn't find hash {} in partition {}.",
-                        resource_hash,
-                        partition.partition_info().id
-                    )
-                    .to_string(),
-                )?;
-                log_callback(msg.as_ptr());
             }
         }
         bail!("Couldn't find {rrid} in any partition when extracting referenced resource");

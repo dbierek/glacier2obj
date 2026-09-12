@@ -6,21 +6,21 @@ use std::path::Path;
 
 fn main() {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let profile = env::var("PROFILE").unwrap();
+    let out_dir = Path::new(&crate_dir).join("generated");
 
+    println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=cbindgen.toml");
     println!("cargo:rerun-if-changed=src");
 
     let config = cbindgen::Config::from_file("cbindgen.toml")
-        .expect("Unable to find cbindgen.toml");
+        .expect("Failed to find or parse cbindgen.toml");
 
-    let target_dir = Path::new(&crate_dir).join("target").join(profile);
-    fs::create_dir_all(&target_dir).unwrap();
+    fs::create_dir_all(&out_dir).expect("Failed to create output directory for headers");
 
     cbindgen::Builder::new()
         .with_crate(crate_dir)
         .with_config(config)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file(target_dir.join("navkit-rpkg-lib.h"));
+        .write_to_file(out_dir.join("navkit-rpkg-lib.h"));
 }
