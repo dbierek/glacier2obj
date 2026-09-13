@@ -1,6 +1,7 @@
 use anyhow::Context;
-use itertools::Itertools;
+use glacier_base::encryption::xtea::XteaConfig;
 use glacier_ini::IniFileSystem;
+use itertools::Itertools;
 use rpkg_rs::resource::partition_manager::{PartitionManager, PartitionState};
 use rpkg_rs::resource::pdefs::PackageDefinitionSource;
 use rpkg_rs::resource::resource_info::ResourceInfo;
@@ -36,7 +37,7 @@ impl PackageScan {
         let mut package_manager: PartitionManager;
         let retail_path = PathBuf::from(&retail_folder);
         let thumbs_path = retail_path.join("thumbs.dat");
-        let thumbs = match IniFileSystem::from_path(&thumbs_path.as_path()) {
+        let thumbs = match IniFileSystem::from_path(&thumbs_path.as_path(), XteaConfig::Woa) {
             Ok(c) => c,
             Err(e) => {
                 let msg =
@@ -84,8 +85,7 @@ impl PackageScan {
         )
         .ok()?;
 
-        let msg =
-            std::ffi::CString::new("Mounting partitions...").unwrap();
+        let msg = std::ffi::CString::new("Mounting partitions...").unwrap();
         log_callback(msg.as_ptr());
 
         //read the packagedefs here

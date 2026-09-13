@@ -1,11 +1,11 @@
 use crate::{json_serde::entities_json::EntitiesJson, package::package_scan::PackageScan};
 use anyhow::{bail, Context};
+use glacier_commons::game::GlacierGame;
+use glacier_commons::hash_list::HashList;
+use glacier_commons::metadata::ExtendedResourceMetadata;
+use glacier_formats::material::MaterialInstance;
 use glacier_texture::mipblock::MipblockData;
-use glacier_texture::{self, convert, texture_map::TextureMap, WoaVersion};
-use hitman_commons::game::GameVersion;
-use hitman_commons::hash_list::HashList;
-use hitman_commons::metadata::ExtendedResourceMetadata;
-use hitman_formats::material::MaterialInstance;
+use glacier_texture::{self, convert, texture_map::TextureMap};
 use rpkg_rs::resource::{
     partition_manager::PartitionManager, resource_package::ResourcePackage,
     runtime_resource_id::RuntimeResourceID,
@@ -20,10 +20,6 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use glacier_commons::hash_list::HashList;
-use glacier_commons::metadata::ExtendedResourceMetadata;
-use glacier_formats::material::MaterialInstance;
-use rpkg_rs::WoaVersion;
 
 pub struct RpkgExtraction;
 
@@ -140,10 +136,10 @@ impl RpkgExtraction {
                                 continue
                             }
                         }
-                        let msg = std::ffi::CString::new(format!(
-                            "Thread {}: Extracting hash {}.",
-                            chunk_i, hash)
-                        ).unwrap();
+                        // let msg = std::ffi::CString::new(format!(
+                        //     "Thread {}: Extracting hash {}.",
+                        //     chunk_i, hash)
+                        // ).unwrap();
                         let rpkg = match resource_packages.entry(last_partition.clone()) {
                             std::collections::hash_map::Entry::Occupied(entry) => entry.into_mut(),
                             std::collections::hash_map::Entry::Vacant(entry) => {
@@ -178,7 +174,7 @@ impl RpkgExtraction {
                         } else if resource_type_ref == "AIRG" {
                             file_extension = ".AIRG".to_string();
                         } else if resource_type_ref == "TEXT" {
-                            let mut texture = match TextureMap::from_memory(&resource_contents, WoaVersion::from(GameVersion::H3)) {
+                            let mut texture = match TextureMap::from_memory(&resource_contents, GlacierGame::H3.into()) {
                                 Ok(result) => result,
                                 Err(e) => {
                                     let msg = std::ffi::CString::new(format!(
@@ -212,7 +208,7 @@ impl RpkgExtraction {
                                                     return Err(());
                                                 }
                                             };
-                                            let mipblock = match MipblockData::from_memory(&texd_data, WoaVersion::HM3) {
+                                            let mipblock = match MipblockData::from_memory(&texd_data, GlacierGame::H3.into()) {
                                                 Ok(result) => result,
                                                 Err(e) => {
                                                     let msg = std::ffi::CString::new(format!(
@@ -436,7 +432,7 @@ impl RpkgExtraction {
     pub fn get_all_referenced_hashes_by_hash_from_rpkg_files(
         resource_hash: String,
         partition_manager: &PartitionManager,
-        log_callback: extern "C" fn(*const c_char),
+        _log_callback: extern "C" fn(*const c_char),
     ) -> anyhow::Result<Vec<String>> {
         // let msg = std::ffi::CString::new(
         //     format!("Getting references for {} in Rpkg files.", resource_hash).to_string(),

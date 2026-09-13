@@ -7,8 +7,8 @@ pub mod package;
 use crate::extract::rpkg_extraction::RpkgExtraction;
 use crate::json_serde::entities_json::EntitiesJson;
 use crate::package::package_scan::PackageScan;
-use hitman_commons::hash_list::HashList;
-use hitman_commons::metadata::RuntimeID;
+use glacier_commons::hash_list::HashList;
+use glacier_commons::metadata::RuntimeID;
 use rpkg_rs::resource::partition_manager::PartitionManager;
 use std::collections::HashSet;
 use std::ffi::{CStr, CString};
@@ -204,8 +204,7 @@ pub extern "C" fn get_all_referenced_hashes_by_hash_from_rpkg_files(
         log_callback,
     ) {
         Ok(references) => Some(references),
-        Err(_) => return std::ptr::null_mut()
-
+        Err(_) => return std::ptr::null_mut(),
     };
     create_string_list(references.unwrap())
 }
@@ -218,11 +217,13 @@ pub extern "C" fn get_mati_json_by_hash(
 ) -> *mut c_char {
     let resource_hash_str = unsafe { CStr::from_ptr(resource_hash).to_string_lossy().into_owned() };
     let partition_manager_ref = unsafe { &*partition_manager };
-    
-    match RpkgExtraction::get_mati_json_by_hash(resource_hash_str, partition_manager_ref, log_callback) {
-        Ok(json) => {
-            CString::new(json).unwrap_or_default().into_raw()
-        },
+
+    match RpkgExtraction::get_mati_json_by_hash(
+        resource_hash_str,
+        partition_manager_ref,
+        log_callback,
+    ) {
+        Ok(json) => CString::new(json).unwrap_or_default().into_raw(),
         Err(_) => std::ptr::null_mut(),
     }
 }
@@ -252,10 +253,7 @@ pub extern "C" fn hash_list_get_all_hashes(list: *const HashList) -> *mut RustSt
     let list_ref = unsafe { &*list };
     let map_guard = list_ref.entries.load();
 
-    let hashes: Vec<String> = map_guard
-        .keys()
-        .map(|rrid| rrid.to_string())
-        .collect();
+    let hashes: Vec<String> = map_guard.keys().map(|rrid| rrid.to_string()).collect();
     create_string_list(hashes)
 }
 
@@ -396,7 +394,7 @@ pub extern "C" fn free_string(ptr: *mut c_char) {
 }
 
 #[no_mangle]
-pub extern "C" fn free_hash_list(ptr: *mut hitman_commons::hash_list::HashList) {
+pub extern "C" fn free_hash_list(ptr: *mut glacier_commons::hash_list::HashList) {
     if ptr.is_null() {
         return;
     }

@@ -8,4 +8,4 @@ after_includes = "struct PartitionManager;\nstruct HashList;"
 
 [parse]
 parse_deps = true
-include = ["hitman_commons"]
+include = ["glacier_commons"]

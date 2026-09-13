@@ -19,13 +19,14 @@ status = "actively-developed"
 rpkg-rs = "1.4.0"
 itertools = { version = "0.15.0", features = [] }
 anyhow = "1.0.95"
-rayon = { version = "1.10.0", optional = true}
+rayon = { version = "1.10.0", optional = true }
 serde = { version = "1.0.194", optional = true, features = ["derive"] }
-serde_json = { version = "1.0.138"}
+serde_json = { version = "1.0.138" }
 serde-hex = { version = "0.1.0", optional = true }
 serde-smile = "0.3.1"
 glacier-texture = "2.2.0"
 glacier-ini = "1.0.0"
+glacier-base = "0.2.1"
 
 [dependencies.glacier-commons]
 git = "https://github.com/atampy25/glacier-commons"
