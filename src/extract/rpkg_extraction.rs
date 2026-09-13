@@ -87,16 +87,20 @@ impl RpkgExtraction {
                         PathBuf::from(String::from(output_folder_ref));
                     let mut resource_packages: HashMap<String, ResourcePackage> = HashMap::new();
 
-                    let mut skipped = 0;
-                    let mut extracted = 0;
+                    // let mut skipped = 0;
+                    // let mut extracted = 0;
 
-                    let msg = std::ffi::CString::new(format!(
-                        "Thread {} started: {} resources in chunk.",
-                        chunk_i, chunk.len())
-                    ).unwrap();
-                    log_callback(msg.as_ptr());
+                    // let msg = std::ffi::CString::new(format!(
+                    //     "Thread {} started: {} resources in chunk.",
+                    //     chunk_i, chunk.len())
+                    // ).unwrap();
+                    // log_callback(msg.as_ptr());
                     for hash in chunk {
-                        log_callback(msg.as_ptr());
+                        // let msg = std::ffi::CString::new(format!(
+                        //     "Thread {}: Extracting hash {}.",
+                        //     chunk_i, hash)
+                        // ).unwrap();
+                        // log_callback(msg.as_ptr());
                         let runtime_folder_path = PathBuf::from(runtime_folder_ref);
 
                         let rrid: RuntimeResourceID =
@@ -132,7 +136,7 @@ impl RpkgExtraction {
                         if aloc_or_prim_file_path.exists() {
                             let aloc_or_prim_file_path_metadata = aloc_or_prim_file_path.metadata();
                             if aloc_or_prim_file_path_metadata.unwrap().modified().unwrap() >= package_path.metadata().unwrap().modified().unwrap() {
-                                skipped += 1;
+                                // skipped += 1;
                                 continue
                             }
                         }
@@ -256,7 +260,7 @@ impl RpkgExtraction {
                             output_folder_path.join(hash.clone() + &file_extension);
                         let resource_file_path =
                             resource_file_path_buf.as_os_str().to_str().unwrap();
-                        extracted += 1;
+                        // extracted += 1;
 
                         if let Err(e) = fs::write(resource_file_path, resource_contents) {
                             let msg =
@@ -266,11 +270,11 @@ impl RpkgExtraction {
                             return Err(());
                         }
                     }
-                    let msg = std::ffi::CString::new(format!(
-                        "Thread {}: Extracted {} resources. Skipped extraction of {} resources that are newer than their rpkg file.",
-                        chunk_i, extracted, skipped)
-                    ).unwrap();
-                    log_callback(msg.as_ptr());
+                    // let msg = std::ffi::CString::new(format!(
+                    //     "Thread {}: Extracted {} resources. Skipped extraction of {} resources that are newer than their rpkg file.",
+                    //     chunk_i, extracted, skipped)
+                    // ).unwrap();
+                    // log_callback(msg.as_ptr());
 
                     Ok(())
                 }));
